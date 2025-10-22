@@ -8,6 +8,7 @@ application {
 
 dependencies {
     implementation project(':patcher')
+    implementation project(':customizer')
 
     implementation 'info.picocli:picocli:4.7.5'
     annotationProcessor 'info.picocli:picocli-codegen:4.7.5'
