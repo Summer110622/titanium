@@ -2,6 +2,7 @@ package com.example.titanium.cli;
 
 import com.example.titanium.patcher.PatcherService;
 import picocli.CommandLine.Command;
+import picocli.CommandLine.Option;
 import picocli.CommandLine.Parameters;
 
 import java.io.File;
@@ -16,6 +17,9 @@ public class PatchCommand implements Callable<Integer> {
     @Parameters(index = "0", description = "The path to the PaperMC server JAR file.", arity = "1")
     private File paperJarFile;
 
+    @Option(names = {"--new-name"}, description = "Set a new server name in spigot.yml.")
+    private String newServerName;
+
     private final PatcherService patcherService;
 
     public PatchCommand() {
@@ -24,8 +28,7 @@ public class PatchCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        // The service will now handle the file logic
-        patcherService.processJarFile(paperJarFile);
+        patcherService.processJarFile(paperJarFile, newServerName);
         return 0;
     }
 }

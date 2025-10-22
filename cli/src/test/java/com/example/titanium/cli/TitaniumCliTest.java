@@ -1,5 +1,6 @@
 package com.example.titanium.cli;
 
+import com.example.titanium.patcher.JarFileModifier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ class TitaniumCliTest {
     Path tempDir;
     private File dummyJar;
     private File dummyTxt;
+    private JarFileModifier jarModifier = new JarFileModifier();
 
     @BeforeEach
     public void setUp() throws IOException {
@@ -34,8 +36,15 @@ class TitaniumCliTest {
         System.setErr(new PrintStream(errContent));
         cmd = new CommandLine(new TitaniumCli());
 
-        // Create dummy files for testing
-        dummyJar = Files.createFile(tempDir.resolve("test-paper.jar")).toFile();
+        // Create a dummy JAR with a spigot.yml file inside
+        dummyJar = tempDir.resolve("test-paper.jar").toFile();
+        String initialSpigotYml = "settings:\n  server-name: 'A Minecraft Server'\n";
+        // Use a helper to create a zip/jar file for testing
+        try (var fs = new JarFileModifier().createZipFileSystem(dummyJar.toPath(), true)) {
+            Path spigotYmlPath = fs.getPath("spigot.yml");
+            Files.writeString(spigotYmlPath, initialSpigotYml);
+        }
+
         dummyTxt = Files.createFile(tempDir.resolve("not-a-jar.txt")).toFile();
     }
 
@@ -43,6 +52,22 @@ class TitaniumCliTest {
     public void restoreStreams() {
         System.setOut(originalOut);
         System.setErr(originalErr);
+    }
+
+    @Test
+    void whenPatchCommandIsCalledWithNewName_thenSpigotYmlIsUpdated() throws IOException {
+        int exitCode = cmd.execute("patch", dummyJar.getAbsolutePath(), "--new-name", "My Custom Server");
+        String output = outContent.toString();
+
+        assertEquals(0, exitCode);
+        assertTrue(output.contains("File validation successful."));
+        assertTrue(output.contains("Attempting to change server name to: My Custom Server"));
+        assertTrue(output.contains("Successfully updated spigot.yml"));
+
+        // Verify the content of spigot.yml inside the jar
+        String updatedSpigotYml = jarModifier.readEntry(dummyJar.toPath(), "spigot.yml");
+        assertTrue(updatedSpigotYml.contains("server-name: My Custom Server"));
+        assertFalse(updatedSpigotYml.contains("A Minecraft Server"));
     }
 
     @Test
