@@ -4,16 +4,17 @@ import com.example.titanium.patcher.PatcherService;
 import picocli.CommandLine.Command;
 import picocli.CommandLine.Parameters;
 
+import java.io.File;
 import java.util.concurrent.Callable;
 
 @Command(
     name = "patch",
-    description = "Applies patches to a specified PaperMC version."
+    description = "Applies patches to a specified PaperMC server JAR file."
 )
 public class PatchCommand implements Callable<Integer> {
 
-    @Parameters(index = "0", description = "The Minecraft version to patch (e.g., 1.20.1).")
-    private String minecraftVersion;
+    @Parameters(index = "0", description = "The path to the PaperMC server JAR file.", arity = "1")
+    private File paperJarFile;
 
     private final PatcherService patcherService;
 
@@ -23,8 +24,8 @@ public class PatchCommand implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        System.out.println("Patching version: " + minecraftVersion);
-        patcherService.applyPatches(minecraftVersion);
+        // The service will now handle the file logic
+        patcherService.processJarFile(paperJarFile);
         return 0;
     }
 }
