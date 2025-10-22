@@ -1,0 +1,15 @@
+# Gradle
+.gradle
+build/
+
+# IDE files
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Local files
+.DS_Store
+/hs_err_pid*
+/replay_pid*
