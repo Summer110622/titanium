@@ -9,7 +9,8 @@ import picocli.CommandLine.Command;
     version = "Titanium 0.1",
     description = "A CUI tool to patch and customize PaperMC.",
     subcommands = {
-        PatchCommand.class
+        PatchCommand.class,
+        PerformanceCommand.class
     }
 )
 public class TitaniumCli implements Runnable {
