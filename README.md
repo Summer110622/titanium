@@ -9,6 +9,7 @@ Titanium is a command-line tool designed to easily patch and customize PaperMC s
 
 - **Change Server Name**: Modify the server name displayed in the server list by editing `spigot.yml` within the JAR.
 - **Add Custom APIs**: Inject custom `.java` source files into the JAR to be compiled and used by other plugins or systems.
+- **Measure Server Startup Time**: Measure the time it takes for the server to start up.
 
 *Note: This project is currently under development. More features, such as performance optimization and patch application, are planned.*
 
@@ -18,7 +19,11 @@ The primary command is `patch`, which takes a path to a PaperMC JAR file and app
 
 ### Basic Syntax
 ```bash
+# For patching
 ./gradlew :cli:run --args="patch <path-to-jar-file> [options...]"
+
+# For performance measurement
+./gradlew :cli:run --args="performance <path-to-jar-file>"
 ```
 
 ### Examples
@@ -40,6 +45,13 @@ This command will find all `.java` files in the `/path/to/my-api-sources` direct
 You can also combine options:
 ```bash
 ./gradlew :cli:run --args="patch /path/to/paper-1.20.1.jar --new-name 'My Custom Server' --custom-api-dir /path/to/api"
+```
+
+#### Measure Server Startup Time
+This command will start the server and measure the time it takes to fully load.
+
+```bash
+./gradlew :cli:run --args="performance /path/to/paper-1.20.1.jar"
 ```
 
 ## For Developers
