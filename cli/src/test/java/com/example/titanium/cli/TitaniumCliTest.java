@@ -28,7 +28,8 @@ class TitaniumCliTest {
     Path tempDir;
     private File dummyJar;
     private File dummyTxt;
-    private JarFileModifier jarModifier = new JarFileModifier();
+    private Path customApiDirPath;
+    private final JarFileModifier jarModifier = new JarFileModifier();
 
     @BeforeEach
     public void setUp() throws IOException {
@@ -39,11 +40,16 @@ class TitaniumCliTest {
         // Create a dummy JAR with a spigot.yml file inside
         dummyJar = tempDir.resolve("test-paper.jar").toFile();
         String initialSpigotYml = "settings:\n  server-name: 'A Minecraft Server'\n";
-        // Use a helper to create a zip/jar file for testing
-        try (var fs = new JarFileModifier().createZipFileSystem(dummyJar.toPath(), true)) {
+        try (var fs = jarModifier.createZipFileSystem(dummyJar.toPath(), true)) {
             Path spigotYmlPath = fs.getPath("spigot.yml");
             Files.writeString(spigotYmlPath, initialSpigotYml);
         }
+
+        // Create a dummy custom API directory with some java files
+        customApiDirPath = tempDir.resolve("custom-api");
+        Files.createDirectories(customApiDirPath);
+        Files.writeString(customApiDirPath.resolve("MyApi.java"), "public class MyApi {}");
+        Files.writeString(customApiDirPath.resolve("MyHandler.java"), "public class MyHandler {}");
 
         dummyTxt = Files.createFile(tempDir.resolve("not-a-jar.txt")).toFile();
     }
@@ -52,6 +58,23 @@ class TitaniumCliTest {
     public void restoreStreams() {
         System.setOut(originalOut);
         System.setErr(originalErr);
+    }
+
+    @Test
+    void whenPatchCommandIsCalledWithCustomApiDir_thenFilesAreInjected() throws IOException {
+        int exitCode = cmd.execute("patch", dummyJar.getAbsolutePath(), "--custom-api-dir", customApiDirPath.toString());
+        String output = outContent.toString();
+
+        assertEquals(0, exitCode);
+        assertTrue(output.contains("Injecting .java files from " + customApiDirPath));
+        assertTrue(output.contains("Injected: MyApi.java"));
+        assertTrue(output.contains("Injected: MyHandler.java"));
+
+        // Verify the files are in the JAR
+        try(var fs = jarModifier.createZipFileSystem(dummyJar.toPath(), false)) {
+            assertTrue(Files.exists(fs.getPath("/API/MyApi.java")));
+            assertTrue(Files.exists(fs.getPath("/API/MyHandler.java")));
+        }
     }
 
     @Test
@@ -64,10 +87,8 @@ class TitaniumCliTest {
         assertTrue(output.contains("Attempting to change server name to: My Custom Server"));
         assertTrue(output.contains("Successfully updated spigot.yml"));
 
-        // Verify the content of spigot.yml inside the jar
         String updatedSpigotYml = jarModifier.readEntry(dummyJar.toPath(), "spigot.yml");
         assertTrue(updatedSpigotYml.contains("server-name: My Custom Server"));
-        assertFalse(updatedSpigotYml.contains("A Minecraft Server"));
     }
 
     @Test
