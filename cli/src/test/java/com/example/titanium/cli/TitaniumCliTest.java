@@ -29,9 +29,14 @@ class TitaniumCliTest {
     }
 
     @Test
-    void whenPatchCommandIsCalled_thenSuccess() {
+    void whenPatchCommandIsCalled_thenPatcherServiceIsInvoked() {
         int exitCode = cmd.execute("patch", "1.20.1");
+        String output = outContent.toString();
+
         assertEquals(0, exitCode);
-        assertTrue(outContent.toString().contains("Patching version: 1.20.1"));
+        assertTrue(output.contains("Patching version: 1.20.1"));
+        assertTrue(output.contains("Fetching source for version 1.20.1..."));
+        assertTrue(output.contains("Applying patches..."));
+        assertTrue(output.contains("Patching complete for version 1.20.1."));
     }
 }
