@@ -1,2 +1,2 @@
 # titanium
-<img width="813" height="326" alt="image" src="https://github.com/user-attachments/assets/0130f83d-755d-4823-838f-b8d674d73c37" />
+<img width="1024" height="1024" alt="image" src="https://github.com/user-attachments/assets/51ab1649-96d6-4a27-a56c-90ad361e70f1" />
