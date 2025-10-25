@@ -31,13 +31,23 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
-// Make the shadowJar task the default jar
-jar {
-    manifest {
-        attributes 'Main-Class': 'com.example.titanium.gui.TitaniumGui'
-    }
+// Disable the standard jar task to avoid conflicts with shadowJar
+tasks.named('jar') {
+    enabled = false
+}
+
+// Ensure the build task depends on the shadowJar task
+tasks.named('build') {
+    dependsOn tasks.named('shadowJar')
 }
 
 shadowJar {
     archiveClassifier.set('')
+    // Required for some dependencies that have service descriptors
+    mergeServiceFiles()
+}
+
+// Tell the distribution tasks to use the shadow JAR
+tasks.named('startScripts') {
+    classpath = files(tasks.shadowJar.archiveFile)
 }
